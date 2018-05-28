@@ -1,36 +1,30 @@
-angular.module('projeto')
-    .controller('FotoController', function($scope, $routeParams, $location, FotoService) {
+angular.module('alurapic').controller('FotoController', function($scope, recursoFoto, cadastroDeFoto, $routeParams) {
+	$scope.foto = {};
 
-        $scope.foto = {};
-        $scope.mensagem = '';
-    
-        if($routeParams.fotoId) {
-            FotoService.get({fotoId: $routeParams.fotoId}, function(retorno) {
-                 $scope.foto = retorno;
-            });
-        }
+	if($routeParams.fotoId){
+		recursoFoto.get({fotoId: $routeParams.fotoId}, function(foto){
+			$scope.foto = foto;
+		}, function(erro){
+			console.log(erro);
+		})
+	}
 
-        $scope.submeter = function() {
-           if($scope.formulario.$valid) {
-                if(!$routeParams.fotoId) {
-                    
-                    FotoService.save($scope.foto, function(_id) {
-                        $scope.foto = {};
-                        $scope.mensagem = 'Salvo com sucesso';
-                    }, function(status) {
-                        console.log(status);
-                        $scope.mensagem = 'Não foi possível salvar';
-                    });
-
-                } else {
-                    FotoService.update({fotoId : $scope.foto._id}, $scope.foto, function(_id) {
-                        $scope.foto = {};
-                        $scope.mensagem = 'Alterado com sucesso';                        
-                    }, function(status) {
-                        console.log(status);
-                        $scope.mensagem = 'Não foi possível alterar';
-                    });                    
-                }
-           } 
-        };
-    });
+	$scope.submeter = function() {
+		if($scope.formulario.$valid){
+			cadastroDeFoto.cadastrar($scope.foto)
+			.then(function(dados){
+				$scope.mensagem = dados.mensagem;
+				if(dados.inclusao){
+					$scope.foto = {};
+					$scope.formulario.$setPristine();
+				}
+			})
+			.catch(function(erro){
+				$scope.mensagem = erro.mensagem;
+				console.log(erro);
+			})
+		}
+		console.log($scope.foto);
+	}
+	
+})
